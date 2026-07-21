@@ -216,6 +216,7 @@ export async function upsertInsight(
         clicks: row.clicks,
         leads: row.leads,
         calls: row.calls ?? 0,
+        results: row.results ?? row.leads + (row.calls ?? 0),
         edited: row.edited ?? false,
         ...(row.notes !== undefined ? { notes: row.notes } : {}),
       })
@@ -297,7 +298,14 @@ export async function updateInsight(
   data: Partial<
     Pick<
       InsightDaily,
-      "spend" | "impressions" | "reach" | "clicks" | "leads" | "calls" | "notes"
+      | "spend"
+      | "impressions"
+      | "reach"
+      | "clicks"
+      | "leads"
+      | "calls"
+      | "results"
+      | "notes"
     >
   >
 ): Promise<void> {

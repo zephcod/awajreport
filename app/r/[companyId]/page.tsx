@@ -11,7 +11,6 @@ import {
   DEFAULT_CURRENCY_MULTIPLIER,
   money,
   num,
-  pct,
   rangeToDates,
   type InsightDaily,
 } from "@/lib/domain";
@@ -119,15 +118,7 @@ export default async function ReportPage({
             {since} → {until}
           </p>
         </div>
-        <div className="flex items-center gap-3">
-          <Link
-            href={`/r/${companyId}/statement${range ? `?range=${range}` : ""}`}
-            className="rounded-md border border-line bg-white px-3 py-2 text-sm text-charcoal transition hover:border-gold"
-          >
-            Export statement
-          </Link>
-          <RangeSelect />
-        </div>
+        <RangeSelect />
       </header>
 
       <section className="grid grid-cols-2 gap-3 sm:grid-cols-4">
@@ -137,14 +128,17 @@ export default async function ReportPage({
         <MetricCard
           label="Clicks"
           value={num(totals.clicks)}
-          sub={`CTR ${pct(totals.ctr)} · CPC ${money(totals.cpc, cur)}`}
+          sub={`CPC ${money(totals.cpc, cur)}`}
         />
         <MetricCard label="Leads" value={num(totals.leads)} />
         <MetricCard
           label="Cost per lead"
           value={totals.leads ? money(totals.cpl, cur) : "—"}
         />
-        <MetricCard label="CTR" value={pct(totals.ctr)} />
+        <MetricCard
+          label="CPR"
+          value={totals.results ? money(totals.cpr, cur) : "—"}
+        />
         <MetricCard
           label="CPC"
           value={totals.clicks ? money(totals.cpc, cur) : "—"}
@@ -162,7 +156,7 @@ export default async function ReportPage({
           <table className="w-full text-sm">
             <thead>
               <tr className="border-b border-line text-left text-xs uppercase tracking-wide text-warmgray">
-                {["Campaign", "Spend", "Impressions", "Clicks", "CTR", "CPC", "Leads", "CPL"].map(
+                {["Campaign", "Spend", "Impressions", "Clicks", "CPC", "Leads", "CPL", "CPR"].map(
                   (h) => (
                     <th key={h} className="px-4 py-3 font-medium sm:px-6">
                       {h}
@@ -194,12 +188,6 @@ export default async function ReportPage({
                           {money(group.spend, cur)} · {num(group.leads)} lead
                           {group.leads === 1 ? "" : "s"}
                         </span>
-                        <Link
-                          href={`/r/${companyId}/statement?parent=${encodeURIComponent(group.parent ?? "__other__")}${range ? `&range=${range}` : ""}`}
-                          className="float-right text-xs text-amber hover:underline"
-                        >
-                          Export statement
-                        </Link>
                       </td>
                     </tr>
                   )}
@@ -216,13 +204,15 @@ export default async function ReportPage({
                       <td className="px-4 py-3 sm:px-6">{money(c.totals.spend, cur)}</td>
                       <td className="px-4 py-3 sm:px-6">{num(c.totals.impressions)}</td>
                       <td className="px-4 py-3 sm:px-6">{num(c.totals.clicks)}</td>
-                      <td className="px-4 py-3 sm:px-6">{pct(c.totals.ctr)}</td>
                       <td className="px-4 py-3 sm:px-6">
                         {c.totals.clicks ? money(c.totals.cpc, cur) : "—"}
                       </td>
                       <td className="px-4 py-3 sm:px-6">{num(c.totals.leads)}</td>
                       <td className="px-4 py-3 sm:px-6">
                         {c.totals.leads ? money(c.totals.cpl, cur) : "—"}
+                      </td>
+                      <td className="px-4 py-3 sm:px-6">
+                        {c.totals.results ? money(c.totals.cpr, cur) : "—"}
                       </td>
                     </tr>
                   ))}

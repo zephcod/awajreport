@@ -13,7 +13,7 @@ export default async function ReportLayout({
     { href: `/r/${companyId}/issues`, label: "Issues", code: "02" },
   ];
   return (
-    <NavShell items={items} subtitle="Client Report">
+    <NavShell items={items} subtitle="Client Report" homeHref="/">
       {children}
     </NavShell>
   );

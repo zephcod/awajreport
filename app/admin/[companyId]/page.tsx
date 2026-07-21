@@ -369,7 +369,7 @@ export default async function ManageCompanyPage({
           <table className="w-full text-sm">
             <thead>
               <tr className="border-b border-line text-left text-xs uppercase tracking-wide text-warmgray">
-                {["Date", "Campaign", "Spend", "Impr.", "Reach", "Clicks", "Leads", "Calls", "", ""].map(
+                {["Date", "Campaign", "Spend", "Impr.", "Reach", "Clicks", "Leads", "Calls", "Results", "", ""].map(
                   (h, i) => (
                     <th key={i} className="px-3 py-3 font-medium first:pl-4 sm:first:pl-6">
                       {h}
@@ -403,6 +403,11 @@ export default async function ManageCompanyPage({
                       <input name="clicks" defaultValue={r.clicks} className={cellInput} />
                       <input name="leads" defaultValue={r.leads} className={cellInput} />
                       <input name="calls" defaultValue={r.calls ?? 0} className={cellInput} />
+                      <input
+                        name="results"
+                        defaultValue={r.results ?? (r.leads + (r.calls ?? 0))}
+                        className={cellInput}
+                      />
                       <button
                         type="submit"
                         className="rounded border border-line px-2 py-1 text-xs text-charcoal transition hover:border-gold"

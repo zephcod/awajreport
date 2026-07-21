@@ -10,7 +10,6 @@ import {
   DEFAULT_CURRENCY_MULTIPLIER,
   money,
   num,
-  pct,
   rangeToDates,
 } from "@/lib/domain";
 
@@ -81,7 +80,7 @@ export default async function CampaignDetailPage({
         <MetricCard
           label="Clicks"
           value={num(totals.clicks)}
-          sub={`CTR ${pct(totals.ctr)} · CPC ${money(totals.cpc, cur)}`}
+          sub={`CPC ${money(totals.cpc, cur)}`}
         />
         <MetricCard label="Leads" value={num(totals.leads)} />
         <MetricCard
@@ -103,7 +102,7 @@ export default async function CampaignDetailPage({
           <table className="w-full text-sm">
             <thead>
               <tr className="border-b border-line text-left text-xs uppercase tracking-wide text-warmgray">
-                {["Date", "Spend", "Impressions", "Reach", "Clicks", "CTR", "Leads"].map(
+                {["Date", "Spend", "Impressions", "Reach", "Clicks", "Leads", "Calls", "CPR"].map(
                   (h) => (
                     <th key={h} className="px-4 py-3 font-medium sm:px-6">
                       {h}
@@ -115,7 +114,7 @@ export default async function CampaignDetailPage({
             <tbody>
               {rows.length === 0 && (
                 <tr>
-                  <td colSpan={7} className="px-6 py-8 text-center text-warmgray">
+                  <td colSpan={8} className="px-6 py-8 text-center text-warmgray">
                     No data for this period yet.
                   </td>
                 </tr>
@@ -129,10 +128,14 @@ export default async function CampaignDetailPage({
                     <td className="px-4 py-3 sm:px-6">{num(r.impressions)}</td>
                     <td className="px-4 py-3 sm:px-6">{num(r.reach)}</td>
                     <td className="px-4 py-3 sm:px-6">{num(r.clicks)}</td>
-                    <td className="px-4 py-3 sm:px-6">
-                      {r.impressions ? pct((r.clicks / r.impressions) * 100) : "—"}
-                    </td>
                     <td className="px-4 py-3 sm:px-6">{num(r.leads)}</td>
+                    <td className="px-4 py-3 sm:px-6">{num(r.calls ?? 0)}</td>
+                    <td className="px-4 py-3 sm:px-6">
+                      {(() => {
+                        const res = r.results ?? r.leads + (r.calls ?? 0);
+                        return res ? money(r.spend / res, cur) : "—";
+                      })()}
+                    </td>
                   </tr>
                 ))}
             </tbody>

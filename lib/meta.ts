@@ -86,6 +86,8 @@ export interface DailyCampaignInsight {
   clicks: number;
   leads: number;
   calls: number;
+  /** leads + calls + follows + engagement + messaging conversations. */
+  results: number;
 }
 
 const LEAD_ACTION_TYPES = new Set([
@@ -101,6 +103,23 @@ const CALL_ACTION_TYPES = new Set([
   "click_to_call_native_call_placed",
   "onsite_conversion.click_to_call_native_call_placed",
   "phone_number_clicks",
+]);
+
+// Page follows / likes.
+const FOLLOW_ACTION_TYPES = new Set([
+  "like", // page likes
+  "onsite_conversion.follow",
+  "follow",
+]);
+
+// Post / page engagement.
+const ENGAGEMENT_ACTION_TYPES = new Set(["post_engagement", "page_engagement"]);
+
+// Messaging conversations started.
+const MESSAGE_ACTION_TYPES = new Set([
+  "onsite_conversion.messaging_conversation_started_7d",
+  "messaging_conversation_started_7d",
+  "onsite_conversion.total_messaging_connection",
 ]);
 
 /**
@@ -138,16 +157,24 @@ export async function fetchDailyInsights(
   const rows = await metaGetAll<MetaInsightRow>(
     `${BASE()}/${normalizeAdAccountId(adAccountId)}/insights?${params}`
   );
-  return rows.map((r) => ({
-    metaCampaignId: r.campaign_id,
-    date: r.date_start,
-    spend: Number(r.spend) || 0,
-    impressions: Number(r.impressions) || 0,
-    reach: Number(r.reach) || 0,
-    clicks: Number(r.clicks) || 0,
-    leads: extractMax(r.actions, LEAD_ACTION_TYPES),
-    calls: extractMax(r.actions, CALL_ACTION_TYPES),
-  }));
+  return rows.map((r) => {
+    const leads = extractMax(r.actions, LEAD_ACTION_TYPES);
+    const calls = extractMax(r.actions, CALL_ACTION_TYPES);
+    const follows = extractMax(r.actions, FOLLOW_ACTION_TYPES);
+    const engagement = extractMax(r.actions, ENGAGEMENT_ACTION_TYPES);
+    const messages = extractMax(r.actions, MESSAGE_ACTION_TYPES);
+    return {
+      metaCampaignId: r.campaign_id,
+      date: r.date_start,
+      spend: Number(r.spend) || 0,
+      impressions: Number(r.impressions) || 0,
+      reach: Number(r.reach) || 0,
+      clicks: Number(r.clicks) || 0,
+      leads,
+      calls,
+      results: leads + calls + follows + engagement + messages,
+    };
+  });
 }
 
 /** Count ads per campaign across the ad account. */

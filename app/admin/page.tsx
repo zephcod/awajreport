@@ -65,7 +65,7 @@ export default async function AdminPage() {
                   </span>
                 </td>
                 <td className="px-4 py-3 text-right sm:px-6">
-                  <span className="inline-flex items-center gap-3">
+                  <span className="inline-flex items-center justify-end gap-1.5">
                     {c.metaAdAccountId ? (
                       <SyncButton companyId={c.$id} label="Sync" compact />
                     ) : (
@@ -78,13 +78,22 @@ export default async function AdminPage() {
                     )}
                     <Link
                       href={`/r/${c.$id}`}
-                      className="text-amber hover:underline"
+                      title="View client report"
+                      className="rounded-md border border-line px-2.5 py-1 text-xs font-medium text-charcoal transition hover:border-gold hover:text-amber"
                     >
-                      View report
+                      Details
+                    </Link>
+                    <Link
+                      href={`/r/${c.$id}/statement`}
+                      title="Export statement"
+                      className="rounded-md border border-line px-2.5 py-1 text-xs font-medium text-charcoal transition hover:border-gold hover:text-amber"
+                    >
+                      Report
                     </Link>
                     <Link
                       href={`/admin/${c.$id}`}
-                      className="text-charcoal hover:underline"
+                      title="Manage company settings"
+                      className="rounded-md bg-navy px-2.5 py-1 text-xs font-medium text-white transition hover:bg-charcoal"
                     >
                       Manage
                     </Link>

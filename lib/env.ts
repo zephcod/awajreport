@@ -13,4 +13,7 @@ export const env = {
   metaAccessToken: () => req("META_ACCESS_TOKEN"),
   metaApiVersion: () => process.env.META_API_VERSION ?? "v21.0",
   cronSecret: () => req("CRON_SECRET"),
+  resendApiKey: () => req("RESEND_API_KEY"),
+  statementFrom: () =>
+    process.env.STATEMENT_FROM ?? "Awaj ET <reports@awajet.com>",
 };

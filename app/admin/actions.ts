@@ -19,7 +19,11 @@ import {
 } from "@/lib/domain";
 import { normalizeAdAccountId } from "@/lib/meta";
 import { requireAdmin } from "@/lib/server-session";
+import { buildStatement } from "@/lib/statement";
+import { renderStatementEmail } from "@/lib/statement-email";
 import { syncAll, syncOne, type CompanySyncResult } from "@/lib/sync";
+import { env } from "@/lib/env";
+import { Resend } from "resend";
 
 function str(fd: FormData, key: string): string {
   return String(fd.get(key) ?? "").trim();
@@ -77,6 +81,7 @@ export async function saveInsightRow(formData: FormData): Promise<void> {
     clicks: Number(formData.get("clicks")) || 0,
     leads: Number(formData.get("leads")) || 0,
     calls: Number(formData.get("calls")) || 0,
+    results: Number(formData.get("results")) || 0,
   });
   revalidatePath(`/admin/${companyId}`);
   revalidatePath(`/r/${companyId}`);
@@ -177,6 +182,40 @@ export async function replyToIssue(formData: FormData): Promise<void> {
   if (!id) throw new Error("Missing issue id");
   await updateIssue(id, { response: response.slice(0, 4096) });
   revalidatePath("/admin/issues");
+}
+
+const EMAIL_RE = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
+
+/** Email a minimized statement for one parent group to a client. */
+export async function emailStatement(input: {
+  companyId: string;
+  to: string;
+  range?: string;
+  parent?: string;
+  summary?: string;
+}): Promise<{ ok: boolean; message: string }> {
+  await requireAdmin();
+  const to = input.to.trim();
+  if (!EMAIL_RE.test(to)) return { ok: false, message: "Enter a valid email address." };
+
+  const data = await buildStatement(input.companyId, input.range, input.parent);
+  if (!data) return { ok: false, message: "Company not found." };
+
+  try {
+    const resend = new Resend(env.resendApiKey());
+    const subject = `Campaign statement — ${data.parentLabel} (${data.since} → ${data.until})`;
+    const html = await renderStatementEmail(data, input.summary?.slice(0, 2000));
+    const { error } = await resend.emails.send({
+      from: env.statementFrom(),
+      to,
+      subject,
+      html,
+    });
+    if (error) return { ok: false, message: error.message };
+    return { ok: true, message: `Statement sent to ${to}.` };
+  } catch (e) {
+    return { ok: false, message: (e as Error).message };
+  }
 }
 
 export async function runSync(companyId?: string): Promise<CompanySyncResult[]> {

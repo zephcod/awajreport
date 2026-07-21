@@ -1,15 +1,16 @@
 import Link from "next/link";
-import { notFound } from "next/navigation";
+import { notFound, redirect } from "next/navigation";
 import { PrintButton } from "@/components/PrintButton";
+import { SendStatementButton } from "@/components/SendStatementButton";
 import { StatementParentSelect } from "@/components/StatementParentSelect";
 import { getCampaigns, getCompany, getCosts, getInsights } from "@/lib/data";
+import { getSession } from "@/lib/server-session";
 import {
   computeTotals,
   COST_CATEGORY_LABELS,
   DEFAULT_CURRENCY_MULTIPLIER,
   money,
   num,
-  pct,
   rangeToDates,
   VAT_RATE,
   WHT_RATE,
@@ -31,6 +32,12 @@ export default async function StatementPage({
 }) {
   const { companyId } = await params;
   const { range, parent: parentParam } = await searchParams;
+
+  // Statements are an admin-only export. Clients viewing their own report
+  // are sent back to the dashboard.
+  const session = await getSession();
+  if (session?.role !== "admin") redirect(`/r/${companyId}`);
+
   const company = await getCompany(companyId);
   if (!company) notFound();
 
@@ -124,6 +131,11 @@ export default async function StatementPage({
           {parentOptions.length > 1 && (
             <StatementParentSelect options={parentOptions} current={selectedKey} />
           )}
+          <SendStatementButton
+            companyId={companyId}
+            range={range}
+            parent={selectedKey}
+          />
           <PrintButton />
         </div>
       </div>
@@ -173,11 +185,11 @@ export default async function StatementPage({
               ["Impressions", num(totals.impressions)],
               ["Reach", num(totals.reach)],
               ["Clicks", num(totals.clicks)],
-              ["CTR", pct(totals.ctr)],
               ["Leads", num(totals.leads)],
               ["Cost / lead", totals.leads ? money(totals.cpl, cur) : "—"],
               ["Calls placed", num(totals.calls)],
               ["Cost / call", totals.calls ? money(totals.costPerCall, cur) : "—"],
+              ["Cost / result", totals.results ? money(totals.cpr, cur) : "—"],
             ].map(([label, value]) => (
               <div key={label}>
                 <p className="text-[9px] uppercase tracking-wider text-warmgray">{label}</p>

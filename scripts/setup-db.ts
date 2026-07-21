@@ -102,6 +102,7 @@ async function main() {
   await ignore409(() => databases.createIntegerAttribute(dbId, "insights_daily", "clicks", false, undefined, undefined, 0), "attr clicks");
   await ignore409(() => databases.createIntegerAttribute(dbId, "insights_daily", "leads", false, undefined, undefined, 0), "attr leads");
   await ignore409(() => databases.createIntegerAttribute(dbId, "insights_daily", "calls", false, undefined, undefined, 0), "attr calls");
+  await ignore409(() => databases.createIntegerAttribute(dbId, "insights_daily", "results", false, undefined, undefined, 0), "attr results");
   await ignore409(() => databases.createBooleanAttribute(dbId, "insights_daily", "edited", false, false), "attr edited");
   await ignore409(() => databases.createStringAttribute(dbId, "insights_daily", "notes", 1024, false), "attr notes");
   await sleep(1500);

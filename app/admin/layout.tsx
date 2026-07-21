@@ -10,7 +10,7 @@ export default function AdminLayout({
   children,
 }: Readonly<{ children: React.ReactNode }>) {
   return (
-    <NavShell items={ITEMS} subtitle="Admin Control" homeHref="/admin">
+    <NavShell items={ITEMS} subtitle="Admin Control" homeHref="/">
       {children}
     </NavShell>
   );

@@ -63,6 +63,11 @@ export interface InsightDaily {
   leads: number;
   /** Calls placed (click-to-call). Optional: older rows predate this field. */
   calls?: number;
+  /**
+   * Total results = leads + calls + page follows + engagement + messaging
+   * conversations started. Synced from Meta; optional for older rows.
+   */
+  results?: number;
   /** True when a value was manually edited — sync will not overwrite. */
   edited: boolean;
   notes?: string;
@@ -130,11 +135,15 @@ export interface MetricTotals {
   clicks: number;
   leads: number;
   calls: number;
+  /** Total results = leads + calls. */
+  results: number;
   ctr: number; // %
   cpc: number;
   cpl: number;
   /** Cost per call placed. */
   costPerCall: number;
+  /** Cost per result = spend / (leads + calls). */
+  cpr: number;
 }
 
 export function computeTotals(rows: InsightDaily[]): MetricTotals {
@@ -146,16 +155,21 @@ export function computeTotals(rows: InsightDaily[]): MetricTotals {
       acc.clicks += r.clicks;
       acc.leads += r.leads;
       acc.calls += r.calls ?? 0;
+      // Fall back to leads + calls for rows synced before `results` existed.
+      acc.results += r.results ?? r.leads + (r.calls ?? 0);
       return acc;
     },
-    { spend: 0, impressions: 0, reach: 0, clicks: 0, leads: 0, calls: 0 }
+    { spend: 0, impressions: 0, reach: 0, clicks: 0, leads: 0, calls: 0, results: 0 }
   );
+  const results = t.results;
   return {
     ...t,
+    results,
     ctr: t.impressions ? (t.clicks / t.impressions) * 100 : 0,
     cpc: t.clicks ? t.spend / t.clicks : 0,
     cpl: t.leads ? t.spend / t.leads : 0,
     costPerCall: t.calls ? t.spend / t.calls : 0,
+    cpr: results ? t.spend / results : 0,
   };
 }
 

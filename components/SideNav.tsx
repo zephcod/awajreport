@@ -91,7 +91,7 @@ function SignOut() {
   return (
     <form action={logout}>
       <button className="font-mono text-[10px] tracking-[0.14em] text-white/40 uppercase transition-colors hover:text-amber">
-        ⏻ Sign out
+        🔒 Sign out
       </button>
     </form>
   );
